@@ -71,18 +71,9 @@ def is_prime(n):
     return True
 
 # Animasyon Linkleri (LottieFiles)
-# 1. Animasyon Linklerini Güncelleyelim (Daha stabil linkler)
-lottie_main = load_lottieurl("https://lottie.host/86d060f6-f6f7-466d-9657-69527e268f7d/S0lQ6EaG5m.json") 
-lottie_success = load_lottieurl("https://lottie.host/80a29486-1a86-43f1-9457-3f332616a8d6/YfMvH6x6G8.json")
+lottie_main = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_4w6cxbsc.json") # Matematik Küpleri
+lottie_success = load_lottieurl("https://assets10.lottiefiles.com/packages/lf20_lg6lh7fp.json") # Onay İşareti
 
-# 2. Animasyonu Gösterirken Kontrol Ekleyelim
-with col_anim:
-    if not analyze_btn:
-        if lottie_main: # Eğer animasyon başarıyla yüklendiyse göster
-            st_lottie(lottie_main, height=250, key="main_anim")
-        else:
-            st.info("🎨 Matematik her yerdedir...") # Link bozuksa uygulama çökmez, bu yazı çıkar
-            
 # --- 3. ANA SAYFA DÜZENİ ---
 st.write("---")
 # st.write("# 🔮 Asal Sayı Sihirbazı") # Standart başlık yerine CSS'li başlık
@@ -149,5 +140,4 @@ col_f1, col_f2 = st.columns([3, 1])
 with col_f1:
     st.caption("© 2023 Asal Sihirbazı Projesi | Python & Streamlit ile geliştirildi.")
 with col_f2:
-
     st.markdown("[![GitHub](https://img.shields.io/badge/GitHub-Portfolyo-purple?style=flat&logo=github)](https://github.com/melihbozcu)", unsafe_allow_html=True) # Buraya kendi GitHub linkini ekle
