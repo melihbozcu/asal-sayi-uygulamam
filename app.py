@@ -2,79 +2,132 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-# --- 1. AYARLAR ---
-st.set_page_config(page_title="Asal Analiz Pro", page_icon="📊", layout="wide")
+# --- 1. ULTRA-MODERN CSS ENJEKSİYONU ---
+st.set_page_config(page_title="Prime Matrix Pro", layout="wide")
 
-# Modern Karanlık Tema CSS
 st.markdown("""
     <style>
-    .stApp { background-color: #0e1117; color: #ffffff; }
-    .main-card {
-        background: #1f2937; padding: 25px; border-radius: 15px;
-        border-left: 5px solid #6c5ce7; margin-bottom: 20px;
+    /* Arka Plan ve Genel Font */
+    .stApp {
+        background: radial-gradient(circle at top right, #1e1b4b, #020617);
+        color: #f8fafc;
     }
+    
+    /* Cam Efektli Kartlar (Glassmorphism) */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 30px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+        margin-bottom: 20px;
+    }
+    
+    /* Parlayan Başlık */
+    .glow-text {
+        font-size: 3rem;
+        font-weight: 800;
+        background: linear-gradient(to right, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
+        letter-spacing: -1px;
+    }
+    
+    /* Modern Buton */
     .stButton>button {
-        width: 100%; border-radius: 25px; background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-        color: white; font-weight: bold; border: none; height: 3em;
+        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+        border: none;
+        color: white;
+        padding: 15px 32px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
+    }
+    
+    /* Input Alanlarını Güzelleştirme */
+    .stNumberInput div div input {
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-radius: 10px !important;
+        color: white !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # --- 2. MATEMATİKSEL MOTOR ---
-def get_factors(n):
-    return [i for i in range(1, n + 1) if n % i == 0]
+def get_analysis(n):
+    factors = [i for i in range(1, n + 1) if n % i == 0]
+    is_p = len(factors) == 2
+    return factors, is_p
 
-def is_prime(n):
-    if n <= 1: return False
-    for i in range(2, int(n**0.5) + 1):
-        if n % i == 0: return False
-    return True
+# --- 3. ANA SAYFA DÜZENİ ---
+st.markdown('<p class="glow-text">PRIME MATRIX PRO</p>', unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #94a3b8; margin-top: -20px;'>Gelecek Nesil Matematiksel Analiz Paneli</p>", unsafe_allow_html=True)
+st.write("")
 
-# --- 3. ARAYÜZ ---
-st.markdown("<h1 style='text-align: center; color: #a29bfe;'>🔬 Asal Sayı Analiz Laboratuvarı</h1>", unsafe_allow_html=True)
+# Üst Bilgi Kartları (Dashboard Stili)
+col_a, col_b, col_c = st.columns(3)
+with col_a:
+    st.markdown('<div class="glass-card"><p style="color:#818cf8">Mevcut Analiz</p><h3>v4.0 Obsidian</h3></div>', unsafe_allow_html=True)
+with col_b:
+    st.markdown('<div class="glass-card"><p style="color:#c084fc">Bağlantı Durumu</p><h3>Aktif / Güvenli</h3></div>', unsafe_allow_html=True)
+with col_c:
+    st.markdown('<div class="glass-card"><p style="color:#2dd4bf">Hesaplama Gücü</p><h3>Anlık (Real-time)</h3></div>', unsafe_allow_html=True)
+
 st.write("---")
 
-col1, col2 = st.columns([1, 1.5])
+# Ana İçerik
+col_main, col_chart = st.columns([1, 1.5], gap="large")
 
-with col1:
-    st.markdown('<div class="main-card">', unsafe_allow_html=True)
-    st.subheader("🔢 Sayı Girişi")
-    number = st.number_input("Analiz edilecek sayıyı girin:", min_value=1, value=17, step=1)
-    analyze_btn = st.button("Kapsamlı Analizi Başlat ✨")
+with col_main:
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.subheader("🛠️ Veri Giriş Terminali")
+    num = st.number_input("Analiz edilecek sayıyı tanımlayın:", min_value=1, value=17)
+    analyze = st.button("Sistemi Çalıştır")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if analyze_btn:
-        factors = get_factors(number)
-        prime_status = is_prime(number)
+    if analyze:
+        factors, is_p = get_analysis(num)
+        status_color = "#2dd4bf" if is_p else "#fb7185"
+        status_text = "ASAL SİNYALİ ALINDI" if is_p else "BİLEŞİK SAYI TESPİTİ"
         
-        # Hızlı Metrikler
-        st.subheader("📋 Özet Bilgiler")
-        c1, c2 = st.columns(2)
-        c1.metric("Asallık", "EVET" if prime_status else "HAYIR")
-        c2.metric("Çarpan Sayısı", len(factors))
+        st.markdown(f"""
+            <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; border: 1px solid {status_color}">
+                <h4 style="color:{status_color}; margin:0;">{status_text}</h4>
+                <p style="font-size: 24px; margin: 10px 0;">Sayı: {num}</p>
+                <p style="color: #94a3b8">Bölen sayısı: {len(factors)}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-with col2:
-    if analyze_btn:
-        st.subheader("📊 Görsel Analiz")
-        factors = get_factors(number)
+with col_chart:
+    if analyze:
+        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+        st.subheader("📊 Frekans Analizi")
+        df = pd.DataFrame({"X": [str(f) for f in factors], "Y": factors})
         
-        if is_prime(number):
-            st.success(f"🌟 {number} sayısı mükemmel bir ASAL sayıdır!")
-            st.balloons()
-        else:
-            st.error(f"❌ {number} sayısı asal değildir.")
-            
-            # Çarpanlar Grafiği (Daha profesyonel durur)
-            df = pd.DataFrame({
-                "Bölenler": [f"Çarpan: {f}" for f in factors],
-                "Değer": [1] * len(factors)
-            })
-            fig = px.pie(df, values='Değer', names='Bölenler', 
-                         title=f"{number} Sayısının Çarpan Dağılımı",
-                         hole=0.4, color_discrete_sequence=px.colors.sequential.RdBu)
-            fig.update_layout(paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white")
-            st.plotly_chart(fig, use_container_width=True)
+        # Grafik tasarımı
+        fig = px.bar(df, x="X", y="Y", color="Y", color_continuous_scale="Purples")
+        fig.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='rgba(0,0,0,0)',
+            font_color="#f8fafc",
+            showlegend=False,
+            margin=dict(t=20, b=20, l=20, r=20),
+            height=350
+        )
+        fig.update_xaxes(showgrid=False)
+        fig.update_yaxes(showgrid=False)
+        
+        st.plotly_chart(fig, use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
 
-# --- 4. ALT BİLGİ ---
-st.write("<br><br>", unsafe_allow_html=True)
-st.caption("© 2026 Asal Analiz Laboratuvarı | Veri Görselleştirme Destekli")
+# Footer
+st.markdown("<p style='text-align: center; color: #475569; margin-top: 50px;'>Engineered by Gemini v2026</p>", unsafe_allow_html=True)
