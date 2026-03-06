@@ -1,199 +1,101 @@
 import streamlit as st
-import pandas as pd
-import plotly.express as px
 
-# --- 1. ULTRA-MODERN CSS ENJEKSİYONU ---
-st.set_page_config(page_title="Prime Matrix Pro", layout="wide")
+# 1. Sayfa Yapılandırması
+st.set_page_config(page_title="Asal Sayı Dedektörü", layout="centered")
 
-st.markdown("""
-    <style>
-    /* Arka Plan ve Genel Font */
-    .stApp {import streamlit as st
+# --- SESSION STATE (GEÇMİŞİ TUTMA) ---
+# Sayfa her yenilendiğinde listenin silinmemesi için session_state kullanıyoruz
+if 'gecmis' not in st.session_state:
+    st.session_state.gecmis = []
 
-# Sayfa yapılandırması (Sekme başlığı ve ikon)
-st.set_page_config(page_title="Asal Sayı Dedektörü", page_icon="🔍", layout="centered")
-
-# --- CUSTOM CSS (Görselliği Düzelten Kısım) ---
-st.markdown("""
-    <style>
-    /* Ana arka planı yumuşat ve içeriği ortala */
-    .stApp {
-        background-color: #f0f2f6; /* Burayı istediğin renkle değiştirebilirsin */
-    }
+# --- SOL PANEL (AYARLAR) ---
+with st.sidebar:
+    st.title("🎨 Tasarım Paneli")
+    bg_color = st.color_picker("Arka Plan", "#0E1117")
+    text_color = st.color_picker("Yazı Rengi", "#00FFAA")
+    button_color = st.color_picker("Buton Rengi", "#FF4B4B")
+    radius = st.slider("Köşe Yumuşatma", 0, 30, 15)
     
-    /* Giriş kutusunun etrafındaki boşlukları düzenle */
-    .main .block-container {
-        padding-top: 10rem;
-        max-width: 500px;
-    }
+    if st.button("Geçmişi Temizle"):
+        st.session_state.gecmis = []
+        st.rerun()
 
-    /* Başlık stili */
-    .main-title {
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        color: #1E1E1E;
+# --- DİNAMİK CSS ---
+style_code = f"""
+<style>
+    .stApp {{ background-color: {bg_color}; }}
+    .main-title {{
+        color: {text_color};
+        font-size: 40px;
         text-align: center;
-        font-weight: 700;
-        margin-bottom: 2rem;
-    }
-
-    /* Giriş kutusu ve Buton özelleştirme */
-    div.stButton > button:first-child {
-        width: 100%;
-        background-color: #FF4B4B;
+        font-weight: bold;
+        margin-top: 5rem;
+    }}
+    div.stButton > button:first-child {{
+        background-color: {button_color};
         color: white;
-        border-radius: 10px;
+        border-radius: {radius}px;
+        width: 100%;
         border: none;
-        height: 3em;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    }}
+    /* Son Aramalar Kutucukları */
+    .history-container {{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+    }}
+    .history-item {{
+        background-color: rgba(255, 255, 255, 0.1);
+        color: {text_color};
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        border: 1px solid {text_color}44;
+    }}
+</style>
+"""
+st.markdown(style_code, unsafe_allow_html=True)
 
-# --- İÇERİK ---
-st.markdown('<h1 class="main-title">Asal Sayı Sorgula</h1>', unsafe_allow_html=True)
+# --- ANA İÇERİK ---
+st.markdown('<p class="main-title">Asal Sayı Sorgula</p>', unsafe_allow_html=True)
 
-# Sayı giriş alanı (Boş ve temiz görünmesi için label'ı gizliyoruz)
-sayi = st.number_input("", min_value=0, step=1, placeholder="Bir sayı yazın...", label_visibility="collapsed")
+sayi = st.number_input("", min_value=0, step=1, placeholder="Bir sayı girin...", label_visibility="collapsed")
 
-col1, col2, col3 = st.columns([1,2,1]) # Butonu ortalamak için kolonlar
-
+col1, col2, col3 = st.columns([1,2,1])
 with col2:
     sorgula = st.button("Kontrol Et")
 
-# --- MANTIK (Logic) ---
+# --- MANTIK VE GEÇMİŞE EKLEME ---
 if sorgula:
     if sayi > 1:
-        asal_mi = True
+        is_prime = True
         for i in range(2, int(sayi**0.5) + 1):
             if (sayi % i) == 0:
-                asal_mi = False
+                is_prime = False
                 break
         
-        if asal_mi:
-            st.balloons()
-            st.success(f"✨ {sayi} bir asal sayıdır!")
+        # Geçmişe ekle (Eğer listede yoksa ekle ve son 5 aramayı tut)
+        if sayi not in st.session_state.gecmis:
+            st.session_state.gecmis.insert(0, sayi)
+            st.session_state.gecmis = st.session_state.gecmis[:5] # Sadece son 5 arama
+        
+        if is_prime:
+            st.success(f"🌟 {sayi} asaldır!")
         else:
             st.error(f"❌ {sayi} asal değildir.")
     else:
-        st.warning("Lütfen 1'den büyük bir sayı girin.")
-        background: radial-gradient(circle at top right, #1e1b4b, #020617);
-        color: #f8fafc;
-    }
+        st.warning("1'den büyük bir sayı girin.")
+
+# --- SON ARATILANLAR (Arama Motoru Stili) ---
+if st.session_state.gecmis:
+    st.markdown('<div style="text-align: center; margin-top: 30px; color: gray; font-size: 0.8rem;">SON ARATILANLAR</div>', unsafe_allow_html=True)
     
-    /* Cam Efektli Kartlar (Glassmorphism) */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-        padding: 30px;
-        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-        margin-bottom: 20px;
-    }
+    # HTML ile yan yana kutucuklar oluşturma
+    history_html = '<div class="history-container">'
+    for item in st.session_state.gecmis:
+        history_html += f'<div class="history-item">{item}</div>'
+    history_html += '</div>'
     
-    /* Parlayan Başlık */
-    .glow-text {
-        font-size: 3rem;
-        font-weight: 800;
-        background: linear-gradient(to right, #818cf8, #c084fc);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        text-align: center;
-        letter-spacing: -1px;
-    }
-    
-    /* Modern Buton */
-    .stButton>button {
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        border: none;
-        color: white;
-        padding: 15px 32px;
-        border-radius: 12px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.4);
-    }
-    
-    /* Input Alanlarını Güzelleştirme */
-    .stNumberInput div div input {
-        background: rgba(0, 0, 0, 0.2) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 10px !important;
-        color: white !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-# --- 2. MATEMATİKSEL MOTOR ---
-def get_analysis(n):
-    factors = [i for i in range(1, n + 1) if n % i == 0]
-    is_p = len(factors) == 2
-    return factors, is_p
-
-# --- 3. ANA SAYFA DÜZENİ ---
-st.markdown('<p class="glow-text">PRIME MATRIX PRO</p>', unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: #94a3b8; margin-top: -20px;'>Gelecek Nesil Matematiksel Analiz Paneli</p>", unsafe_allow_html=True)
-st.write("")
-
-# Üst Bilgi Kartları (Dashboard Stili)
-col_a, col_b, col_c = st.columns(3)
-with col_a:
-    st.markdown('<div class="glass-card"><p style="color:#818cf8">Mevcut Analiz</p><h3>v4.0 Obsidian</h3></div>', unsafe_allow_html=True)
-with col_b:
-    st.markdown('<div class="glass-card"><p style="color:#c084fc">Bağlantı Durumu</p><h3>Aktif / Güvenli</h3></div>', unsafe_allow_html=True)
-with col_c:
-    st.markdown('<div class="glass-card"><p style="color:#2dd4bf">Hesaplama Gücü</p><h3>Anlık (Real-time)</h3></div>', unsafe_allow_html=True)
-
-st.write("---")
-
-# Ana İçerik
-col_main, col_chart = st.columns([1, 1.5], gap="large")
-
-with col_main:
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.subheader("🛠️ Veri Giriş Terminali")
-    num = st.number_input("Analiz edilecek sayıyı tanımlayın:", min_value=1, value=17)
-    analyze = st.button("Sistemi Çalıştır")
-    st.markdown('</div>', unsafe_allow_html=True)
-
-    if analyze:
-        factors, is_p = get_analysis(num)
-        status_color = "#2dd4bf" if is_p else "#fb7185"
-        status_text = "ASAL SİNYALİ ALINDI" if is_p else "BİLEŞİK SAYI TESPİTİ"
-        
-        st.markdown(f"""
-            <div style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; border: 1px solid {status_color}">
-                <h4 style="color:{status_color}; margin:0;">{status_text}</h4>
-                <p style="font-size: 24px; margin: 10px 0;">Sayı: {num}</p>
-                <p style="color: #94a3b8">Bölen sayısı: {len(factors)}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-with col_chart:
-    if analyze:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-        st.subheader("📊 Frekans Analizi")
-        df = pd.DataFrame({"X": [str(f) for f in factors], "Y": factors})
-        
-        # Grafik tasarımı
-        fig = px.bar(df, x="X", y="Y", color="Y", color_continuous_scale="Purples")
-        fig.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-            plot_bgcolor='rgba(0,0,0,0)',
-            font_color="#f8fafc",
-            showlegend=False,
-            margin=dict(t=20, b=20, l=20, r=20),
-            height=350
-        )
-        fig.update_xaxes(showgrid=False)
-        fig.update_yaxes(showgrid=False)
-        
-        st.plotly_chart(fig, use_container_width=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-# Footer
-st.markdown("<p style='text-align: center; color: #475569; margin-top: 50px;'>Engineered by Gemini v2026</p>", unsafe_allow_html=True)
+    st.markdown(history_html, unsafe_allow_html=True)
