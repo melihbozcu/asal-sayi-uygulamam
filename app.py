@@ -8,7 +8,73 @@ st.set_page_config(page_title="Prime Matrix Pro", layout="wide")
 st.markdown("""
     <style>
     /* Arka Plan ve Genel Font */
+    .stApp {import streamlit as st
+
+# Sayfa yapılandırması (Sekme başlığı ve ikon)
+st.set_page_config(page_title="Asal Sayı Dedektörü", page_icon="🔍", layout="centered")
+
+# --- CUSTOM CSS (Görselliği Düzelten Kısım) ---
+st.markdown("""
+    <style>
+    /* Ana arka planı yumuşat ve içeriği ortala */
     .stApp {
+        background-color: #f0f2f6; /* Burayı istediğin renkle değiştirebilirsin */
+    }
+    
+    /* Giriş kutusunun etrafındaki boşlukları düzenle */
+    .main .block-container {
+        padding-top: 10rem;
+        max-width: 500px;
+    }
+
+    /* Başlık stili */
+    .main-title {
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #1E1E1E;
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 2rem;
+    }
+
+    /* Giriş kutusu ve Buton özelleştirme */
+    div.stButton > button:first-child {
+        width: 100%;
+        background-color: #FF4B4B;
+        color: white;
+        border-radius: 10px;
+        border: none;
+        height: 3em;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# --- İÇERİK ---
+st.markdown('<h1 class="main-title">Asal Sayı Sorgula</h1>', unsafe_allow_html=True)
+
+# Sayı giriş alanı (Boş ve temiz görünmesi için label'ı gizliyoruz)
+sayi = st.number_input("", min_value=0, step=1, placeholder="Bir sayı yazın...", label_visibility="collapsed")
+
+col1, col2, col3 = st.columns([1,2,1]) # Butonu ortalamak için kolonlar
+
+with col2:
+    sorgula = st.button("Kontrol Et")
+
+# --- MANTIK (Logic) ---
+if sorgula:
+    if sayi > 1:
+        asal_mi = True
+        for i in range(2, int(sayi**0.5) + 1):
+            if (sayi % i) == 0:
+                asal_mi = False
+                break
+        
+        if asal_mi:
+            st.balloons()
+            st.success(f"✨ {sayi} bir asal sayıdır!")
+        else:
+            st.error(f"❌ {sayi} asal değildir.")
+    else:
+        st.warning("Lütfen 1'den büyük bir sayı girin.")
         background: radial-gradient(circle at top right, #1e1b4b, #020617);
         color: #f8fafc;
     }
