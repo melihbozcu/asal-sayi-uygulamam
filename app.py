@@ -16,7 +16,7 @@ with st.sidebar:
         st.session_state.gecmis = []
         st.rerun()
 
-# --- GELİŞTİRİLMİŞ CSS (BÜYÜTÜLMÜŞ ELEMANLAR) ---
+# --- GELİŞTİRİLMİŞ CSS (TAM SİMETRİ VE BÜYÜTME) ---
 style_code = f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&display=swap');
@@ -31,58 +31,59 @@ style_code = f"""
         background-attachment: fixed;
     }}
     
-    /* BAŞLIK: Daha büyük ve daha parlak */
+    /* Form Çerçevesini Gizleme */
+    div[data-testid="stForm"] {{
+        border: none !important;
+        padding: 0 !important;
+    }}
+
     .main-title {{
         font-family: 'Orbitron', sans-serif;
         color: {vurgu_rengi};
-        font-size: 75px; /* Başlık büyütüldü */
+        font-size: clamp(40px, 10vw, 80px);
         text-align: center;
         font-weight: 900;
         margin-top: 2rem;
-        margin-bottom: 3rem;
-        text-shadow: 0 0 20px {vurgu_rengi}, 0 0 40px {vurgu_rengi};
-        letter-spacing: 5px;
+        margin-bottom: 2rem;
+        text-shadow: 0 0 20px {vurgu_rengi};
     }}
     
-    /* GİRİŞ KUTUSU: Daha geniş ve yüksek */
     .stNumberInput input {{
         background-color: rgba(0, 0, 0, 0.8) !important;
         color: white !important;
         border: 2px solid {vurgu_rengi} !important;
         border-radius: 15px !important;
         font-family: 'Orbitron', sans-serif;
-        height: 70px !important; /* Kutu yüksekliği artırıldı */
-        font-size: 25px !important; /* İçindeki sayı büyütüldü */
+        height: 70px !important;
+        font-size: 30px !important;
+        text-align: center !important;
     }}
 
-    /* BUTON: Tam orta ve simetrik */
-    div.stButton > button:first-child {{
-        background-color: {vurgu_rengi};
-        color: black;
-        border-radius: 15px;
-        font-family: 'Orbitron', sans-serif;
-        font-weight: bold;
-        height: 55px;
-        width: 100%; /* Kolon içinde tam yayılma */
-        font-size: 18px;
-        border: none;
-        box-shadow: 0 0 15px {vurgu_rengi};
-        transition: 0.4s;
+    /* Butonun Tam Ortalanması İçin CSS */
+    div.stButton > button {{
+        background-color: {vurgu_rengi} !important;
+        color: black !important;
+        border-radius: 15px !important;
+        font-family: 'Orbitron', sans-serif !important;
+        font-weight: bold !important;
+        height: 60px !important;
+        width: 100% !important;
+        font-size: 20px !important;
+        border: none !important;
+        box-shadow: 0 0 15px {vurgu_rengi} !important;
+        display: block !important;
+        margin: 0 auto !important;
     }}
     
-    div.stButton > button:hover {{
-        transform: scale(1.05);
-        box-shadow: 0 0 30px {vurgu_rengi};
-    }}
-
     .history-item {{
-        background-color: rgba(0, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.6);
         color: {vurgu_rengi};
-        padding: 10px;
-        border-radius: 10px;
-        border: 1px solid {vurgu_rengi}66;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid {vurgu_rengi}88;
         text-align: center;
         font-family: 'Orbitron', sans-serif;
+        font-size: 1.1rem;
     }}
 </style>
 """
@@ -91,16 +92,18 @@ st.markdown(style_code, unsafe_allow_html=True)
 # --- ANA İÇERİK ---
 st.markdown('<p class="main-title">ASAL PRO</p>', unsafe_allow_html=True)
 
-# Sayı Girişi - Geniş kolon içinde
-col_main_1, col_main_2, col_main_3 = st.columns([1, 6, 1])
-with col_main_2:
-    sayi = st.number_input("", min_value=0, step=1, placeholder="SAYI GİRİN", label_visibility="collapsed")
-
-# Buton - Daha dar bir orta kolon ile tam simetri
-st.write(" ") # Mesafe
-col_btn_1, col_btn_2, col_btn_3 = st.columns([2, 2, 2])
-with col_btn_2:
-    sorgula = st.button("ANALİZ ET")
+# Enter tuşu için Form yapısı
+with st.form(key='asal_ara', clear_on_submit=False):
+    # Giriş Kutusu - Geniş orta kolon
+    c1, c2, c3 = st.columns([1, 4, 1])
+    with c2:
+        sayi = st.number_input("", min_value=0, step=1, placeholder="SAYI GİRİN", label_visibility="collapsed")
+    
+    # Buton - Giriş kutusuyla aynı hizada (c2 kolonu içinde) tam simetri sağlar
+    st.write("") # Küçük bir boşluk
+    b1, b2, b3 = st.columns([1.5, 3, 1.5]) # Butonu biraz daha daraltıp tam merkeze aldık
+    with b2:
+        sorgula = st.form_submit_button(label="ANALİZ ET")
 
 # --- ANALİZ VE GRAFİK ---
 if sorgula:
@@ -113,28 +116,33 @@ if sorgula:
             st.session_state.gecmis = st.session_state.gecmis[:5]
 
         # Sonuç Paneli
-        with st.container():
-            if is_prime:
-                st.balloons()
-                st.success(f"✔️ {sayi} ASALDIR")
-            else:
-                st.error(f"❌ {sayi} ASAL DEĞİLDİR")
-                
-                # Grafik
-                st.write("### 📊 Bölünebilirlik")
-                fig, ax = plt.subplots(figsize=(6, 3))
-                fig.patch.set_alpha(0)
-                ax.patch.set_alpha(0)
-                ax.bar([str(x) for x in bolenler], bolenler, color=vurgu_rengi)
-                ax.tick_params(axis='both', colors='white')
-                st.pyplot(fig)
+        if is_prime:
+            st.balloons()
+            st.success(f"✔️ {sayi} SİSTEM TARAFINDAN ASAL OLARAK ONAYLANDI.")
+        else:
+            st.error(f"❌ {sayi} ASAL DEĞİLDİR.")
+            
+            # Grafik
+            st.write("### 📊 Bölünebilirlik Analizi")
+            fig, ax = plt.subplots(figsize=(8, 4))
+            fig.patch.set_alpha(0)
+            ax.patch.set_alpha(0)
+            
+            # Grafik çubukları
+            ax.bar([str(x) for x in bolenler], bolenler, color=vurgu_rengi, edgecolor="white", linewidth=0.5)
+            ax.tick_params(axis='both', colors='white', labelsize=10)
+            for spine in ax.spines.values():
+                spine.set_color('white')
+            
+            st.pyplot(fig)
+            st.info(f"Tespit Edilen Bölenler: {', '.join(map(str, bolenler))}")
     else:
-        st.warning("1'den büyük bir sayı girin.")
+        st.warning("Lütfen 1'den büyük bir tam sayı giriniz.")
 
 # --- SON ARATILANLAR ---
 if st.session_state.gecmis:
     st.write("---")
-    st.markdown('<p style="text-align:center; color:gray; font-size:0.8rem; font-family:Orbitron;">SİSTEM GEÇMİŞİ</p>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align:center; color:gray; font-size:0.9rem; font-family:Orbitron; letter-spacing:2px;">SİSTEM GEÇMİŞİ</p>', unsafe_allow_html=True)
     cols = st.columns(5)
     for i, s in enumerate(st.session_state.gecmis):
         with cols[i]:
