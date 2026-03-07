@@ -22,12 +22,12 @@ style_code = f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;900&display=swap');
 
-    /* GİZLEME: GitHub ikonu, menü ve footer tamamen yok edilir */
+  /
     header {{ visibility: hidden !important; }}
     #MainMenu {{ visibility: hidden !important; }}
     footer {{ visibility: hidden !important; }}
     
-    /* İÇERİĞİ YUKARI ÇEKME */
+   
     .stApp {{
         background-image: url("https://img.pikbest.com/origin/01/43/40/636pIkbEsTkBw.jpg!w700wp");
         background-size: cover;
@@ -36,7 +36,7 @@ style_code = f"""
         margin-top: -70px;
     }}
 
-    /* FORM ÇERÇEVESİNİ SİLME */
+  
     div[data-testid="stForm"] {{
         border: none !important;
         padding: 0 !important;
@@ -80,7 +80,7 @@ style_code = f"""
         font-weight: 900 !important;
         height: 60px !important;
         width: 100% !important;
-        max-width: 350px; /* Butonun çok yayılmasını engeller, simetrik tutar */
+        max-width: 350px; 
         font-size: 22px !important;
         border: none !important;
         box-shadow: 0 0 25px {vurgu_rengi} !important;
@@ -140,7 +140,7 @@ if sorgula:
         st.write("---")
         if is_prime:
             st.balloons()
-            st.success(f"🌌 SİSTEM TARAMASI TAMAMLANDI: {sayi} BİR ASAL SAYIDIR.")
+            st.success(f"🌌 TARAMA TAMAMLANDI: {sayi} BİR ASAL SAYIDIR.")
         else:
             st.error(f"⚠️ ANALİZ SONUCU: {sayi} ASAL DEĞİLDİR.")
             
@@ -174,5 +174,6 @@ if st.session_state.gecmis:
     for i, s in enumerate(st.session_state.gecmis):
         with cols[i]:
             st.markdown(f'<div class="history-item">{s}</div>', unsafe_allow_html=True)
+
 
 
