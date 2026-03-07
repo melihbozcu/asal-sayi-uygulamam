@@ -1,113 +1,151 @@
 import streamlit as st
+import matplotlib.pyplot as plt
+import numpy as np
 
-# 1. Sayfa Yapılandırması
-st.set_page_config(page_title="Asal Sayı Dedektörü", layout="centered")
+# 1. Sayfa Yapılandırması (Gizlemeler Dahil)
+st.set_page_config(page_title="Asal Sayı Uzay Dedektörü", layout="centered")
 
-# --- SESSION STATE (GEÇMİŞİ TUTMA) ---
-# Sayfa her yenilendiğinde listenin silinmemesi için session_state kullanıyoruz
+# --- SESSION STATE (GEÇMİŞ İÇİN) ---
 if 'gecmis' not in st.session_state:
     st.session_state.gecmis = []
 
-# --- SOL PANEL (AYARLAR) ---
+# --- TASARIM PANELİ (SIDEBAR) ---
 with st.sidebar:
-    st.title("🎨 Tasarım Paneli")
-    bg_color = st.color_picker("Arka Plan", "#0E1117")
-    text_color = st.color_picker("Yazı Rengi", "#00FFAA")
-    button_color = st.color_picker("Buton Rengi", "#FF4B4B")
-    radius = st.slider("Köşe Yumuşatma", 0, 30, 15)
-    
-    if st.button("Geçmişi Temizle"):
-        st.session_state.gecmis = []
-        st.rerun()
+    st.title("🛸 Görev Kontrol")
+    st.subheader("Arayüz Ayarları")
+    # Kullanıcı ana vurgu rengini seçebilsin
+    vurgu_rengi = st.color_picker("Vurgu Rengi", "#00FFAA")
+    st.caption("Not: Arka plan sabit bir uzay görselidir.")
 
-#MainMenu {visibility: hidden;}
-header {visibility: hidden;}
-
-/* Alttaki 'Made with Streamlit' yazısını gizler */
-footer {visibility: hidden;}
-
-/* Üstteki boşluğu (header gidince oluşan) kapatmak için */
-.stApp {
-    margin-top: -2rem;
-}
-
-# --- DİNAMİK CSS ---
+# --- CSS: UZAY ARKA PLANI VE HAVALI FONT ---
+# Google Fonts'tan 'Orbitron' fontunu çekiyoruz
 style_code = f"""
 <style>
-    .stApp {{ background-color: {bg_color}; }}
+    /* Google Font İçe Aktarma */
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    /* GİZLEME KOMUTLARI (GitHub/Menü/Footer) */
+    #MainMenu {{ visibility: hidden; }}
+    header {{ visibility: hidden; }}
+    footer {{ visibility: hidden; }}
+    
+    /* UZAY ARKA PLANI */
+    .stApp {{
+        background-image: url("https://img.pikbest.com/origin/01/43/40/636pIkbEsTkBw.jpg!w700wp");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }}
+    
+    /* HAVALI BAŞLIK FONTTU (Orbitron) */
     .main-title {{
-        color: {text_color};
-        font-size: 40px;
+        font-family: 'Orbitron', sans-serif;
+        color: {vurgu_rengi};
+        font-size: 50px;
         text-align: center;
         font-weight: bold;
-        margin-top: 5rem;
+        margin-top: 1rem;
+        text-shadow: 0 0 10px {vurgu_rengi}, 0 0 20px {vurgu_rengi}; /* Parlama Efekti */
     }}
+    
+    /* GİRİŞ KUTUSU */
+    .stNumberInput input {{
+        background-color: rgba(0, 0, 0, 0.6) !important;
+        color: white !important;
+        border-radius: 10px !important;
+        border: 1px solid {vurgu_rengi} !important;
+        font-family: 'Orbitron', sans-serif;
+    }}
+
+    /* BUTON */
     div.stButton > button:first-child {{
-        background-color: {button_color};
-        color: white;
-        border-radius: {radius}px;
-        width: 100%;
-        border: none;
+        background-color: transparent;
+        color: {vurgu_rengi};
+        border-radius: 10px;
+        border: 2px solid {vurgu_rengi};
+        font-family: 'Orbitron', sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 2px;
     }}
-    /* Son Aramalar Kutucukları */
-    .history-container {{
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 10px;
-        margin-top: 20px;
-    }}
-    .history-item {{
-        background-color: rgba(255, 255, 255, 0.1);
-        color: {text_color};
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        border: 1px solid {text_color}44;
+    div.stButton > button:first-child:hover {{
+        background-color: {vurgu_rengi};
+        color: #000;
     }}
 </style>
 """
 st.markdown(style_code, unsafe_allow_html=True)
 
-# --- ANA İÇERİK ---
-st.markdown('<p class="main-title">Asal Sayı Sorgula</p>', unsafe_allow_html=True)
+# --- İÇERİK ---
+st.markdown('<p class="main-title">TARAYICI</p>', unsafe_allow_html=True)
 
+# Giriş alanı
 sayi = st.number_input("", min_value=0, step=1, placeholder="Bir sayı girin...", label_visibility="collapsed")
 
 col1, col2, col3 = st.columns([1,2,1])
 with col2:
     sorgula = st.button("Kontrol Et")
 
-# --- MANTIK VE GEÇMİŞE EKLEME ---
+# --- MANTIK, GRAFİK VE GEÇMİŞ ---
 if sorgula:
     if sayi > 1:
+        bolenler = []
         is_prime = True
+        
+        # Asal kontrolü ve bölenleri bulma
         for i in range(2, int(sayi**0.5) + 1):
             if (sayi % i) == 0:
                 is_prime = False
-                break
+                bolenler.append(i)
+                # İkinci böleni de ekle (Örn: 10 için 2 bulduysa 5'i de ekle)
+                if i != sayi // i:
+                    bolenler.append(sayi // i)
         
-        # Geçmişe ekle (Eğer listede yoksa ekle ve son 5 aramayı tut)
+        bolenler.sort()
+
+        # Geçmişe ekle
         if sayi not in st.session_state.gecmis:
             st.session_state.gecmis.insert(0, sayi)
-            st.session_state.gecmis = st.session_state.gecmis[:5] # Sadece son 5 arama
-        
-        if is_prime:
-            st.success(f"🌟 {sayi} asaldır!")
-        else:
-            st.error(f"❌ {sayi} asal değildir.")
+            st.session_state.gecmis = st.session_state.gecmis[:5]
+
+        # SONUÇ EKRANI
+        with st.container(border=True):
+            st.subheader(f"{sayi} Sayısının Analizi")
+            
+            if is_prime:
+                st.success(f"🌟 SİSTEM MESAJI: {sayi} bir asal sayıdır!")
+                st.balloons()
+            else:
+                st.error(f"❌ SİSTEM MESAJI: {sayi} asal değildir.")
+                
+                # BÖLENLERİ GÖSTEREN GRAFİK (Eğer asal değilse)
+                st.write("---")
+                st.write("**Bölenlerin Analiz Grafiği:**")
+                
+                if bolenler:
+                    # Matplotlib ile Grafik Oluşturma
+                    fig, ax = plt.subplots(figsize=(6, 3))
+                    
+                    # Grafiği temizleme (Arka planı şeffaf yapma)
+                    fig.patch.set_alpha(0)
+                    ax.patch.set_alpha(0)
+                    
+                    # Veriler
+                    x_labels = [str(b) for b in bolenler]
+                    y_values = bolenler
+                    
+                    # Grafiği çizme
+                    bars = ax.bar(x_labels, y_values, color=vurgu_rengi, alpha=0.7)
+                    
+                    # Eksenleri düzenleme (Renklendirme)
+                    ax.tick_params(axis='x', colors='white')
+                    ax.tick_params(axis='y', colors='white')
+                    ax.set_ylabel('Bölen Değeri', color='white', fontfamily='Orbitron')
+                    ax.spines['bottom'].set_color('white')
+                    ax.spines['left'].set_color('white')
+                    
+                    # Grafiği Streamlit'e basma
+                    st.pyplot(fig)
+                    st.info(f"Bölenler: {', '.join(map(str, bolenler))}")
+
     else:
         st.warning("1'den büyük bir sayı girin.")
-
-# --- SON ARATILANLAR (Arama Motoru Stili) ---
-if st.session_state.gecmis:
-    st.markdown('<div style="text-align: center; margin-top: 30px; color: gray; font-size: 0.8rem;">SON ARATILANLAR</div>', unsafe_allow_html=True)
-    
-    # HTML ile yan yana kutucuklar oluşturma
-    history_html = '<div class="history-container">'
-    for item in st.session_state.gecmis:
-        history_html += f'<div class="history-item">{item}</div>'
-    history_html += '</div>'
-    
-
-    st.markdown(history_html, unsafe_allow_html=True)
