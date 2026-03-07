@@ -20,6 +20,17 @@ with st.sidebar:
         st.session_state.gecmis = []
         st.rerun()
 
+#MainMenu {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Alttaki 'Made with Streamlit' yazısını gizler */
+footer {visibility: hidden;}
+
+/* Üstteki boşluğu (header gidince oluşan) kapatmak için */
+.stApp {
+    margin-top: -2rem;
+}
+
 # --- DİNAMİK CSS ---
 style_code = f"""
 <style>
@@ -98,4 +109,5 @@ if st.session_state.gecmis:
         history_html += f'<div class="history-item">{item}</div>'
     history_html += '</div>'
     
+
     st.markdown(history_html, unsafe_allow_html=True)
